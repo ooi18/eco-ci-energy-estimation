@@ -4,7 +4,22 @@ set -euo pipefail
 source "$(dirname "$0")/vars.sh"
 
 get_geoip() {
-    response=$(curl -s https://ipapi.co/json || true)
+    echo "$IP2LOCATIONIO_API_KEY"
+    # response=$(curl -s https://ipapi.co/json || true)
+    http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://ipapi.co/json)
+    response=$(< /tmp/response_body.txt)
+    rm /tmp/response_body.txt
+
+    if [[ "$http_code" == "429" ]]; then
+        http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/)
+        response=$(< /tmp/response_body.txt)
+        rm /tmp/response_body.txt
+        if echo "$response" | jq '.latitude, .longitude, .city_name, .ip' | grep -q null; then
+            echo -e "Required data is missing\nResponse is ${response}\nExiting" >&2
+            return
+        fi
+        response=$(echo "$response" | jq '. | .city = .city_name | del(.city_name)')
+    fi
 
     if [[ -z "$response" ]] || ! echo "$response" | jq empty; then
         echo "Failed to retrieve data or received invalid JSON. Exiting" >&2
@@ -31,6 +46,7 @@ get_carbon_intensity() {
     if [ -z "${ELECTRICITY_MAPS_TOKEN+x}" ]; then
         export ELECTRICITY_MAPS_TOKEN='no_token'
     fi
+    echo "$ELECTRICITY_MAPS_TOKEN"
 
     GEO_LAT=${GEO_LAT:-}
     GEO_LON=${GEO_LON:-}
