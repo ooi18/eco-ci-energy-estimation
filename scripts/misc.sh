@@ -9,10 +9,15 @@ get_geoip() {
     response=$(< /tmp/response_body.txt)
     rm /tmp/response_body.txt
     echo "$response"
+    http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/)
+    response=$(< /tmp/response_body.txt)
+    rm /tmp/response_body.txt
+    echo "$response"
     # response=$(curl -s https://ipapi.co/json || true)
     http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://ipapi.co/json)
     response=$(< /tmp/response_body.txt)
     rm /tmp/response_body.txt
+    echo "$response"
 
     if [[ "$http_code" == "429" ]]; then
         http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/)
