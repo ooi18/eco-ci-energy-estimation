@@ -13,6 +13,10 @@ get_geoip() {
     response=$(< /tmp/response_body.txt)
     rm /tmp/response_body.txt
     echo "$response"
+    http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://ipinfo.io/json)
+    response=$(< /tmp/response_body.txt)
+    rm /tmp/response_body.txt
+    echo "$response"
     # response=$(curl -s https://ipapi.co/json || true)
     http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://ipapi.co/json)
     response=$(< /tmp/response_body.txt)
