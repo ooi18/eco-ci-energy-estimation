@@ -4,7 +4,11 @@ set -euo pipefail
 source "$(dirname "$0")/vars.sh"
 
 get_geoip() {
-    echo "$IP2LOCATIONIO_API_KEY"
+    # echo "$IP2LOCATIONIO_API_KEY"
+    http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/?key=$IP2LOCATIONIO_API_KEY)
+    response=$(< /tmp/response_body.txt)
+    rm /tmp/response_body.txt
+    echo "$response"
     # response=$(curl -s https://ipapi.co/json || true)
     http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://ipapi.co/json)
     response=$(< /tmp/response_body.txt)
@@ -46,7 +50,6 @@ get_carbon_intensity() {
     if [ -z "${ELECTRICITY_MAPS_TOKEN+x}" ]; then
         export ELECTRICITY_MAPS_TOKEN='no_token'
     fi
-    echo "$ELECTRICITY_MAPS_TOKEN"
 
     GEO_LAT=${GEO_LAT:-}
     GEO_LON=${GEO_LON:-}
