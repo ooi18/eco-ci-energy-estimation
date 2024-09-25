@@ -5,31 +5,9 @@ source "$(dirname "$0")/vars.sh"
 
 get_geoip() {
     # echo "$IP2LOCATIONIO_API_KEY"
-    if [ -z "${IP2LOCATIONIO_API_KEY+x}" ]; then
-        echo "Condition A."
-    else
-        echo "Condition B."
-    fi
-    http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/?key=$IP2LOCATIONIO_API_KEY)
-    response=$(< /tmp/response_body.txt)
-    rm /tmp/response_body.txt
-    echo "$response"
-    http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/)
-    response=$(< /tmp/response_body.txt)
-    rm /tmp/response_body.txt
-    echo "$response"
-    http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://ipinfo.io/json)
-    response=$(< /tmp/response_body.txt)
-    rm /tmp/response_body.txt
-    echo "$response"
-    # response=$(curl -s https://ipapi.co/json || true)
-    http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://ipapi.co/json)
-    response=$(< /tmp/response_body.txt)
-    rm /tmp/response_body.txt
-    echo "$response"
-
-    if [[ "$http_code" == "429" ]]; then
-        http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/)
+    if [ -n "${IP2LOCATIONIO_API_KEY}" ]; then
+        echo "Detected IP2Location.io API Key, will use IP2Location.io API key now."
+        http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/?key=$IP2LOCATIONIO_API_KEY)
         response=$(< /tmp/response_body.txt)
         rm /tmp/response_body.txt
         if echo "$response" | jq '.latitude, .longitude, .city_name, .ip' | grep -q null; then
@@ -37,8 +15,26 @@ get_geoip() {
             return
         fi
         response=$(echo "$response" | jq '. | .city = .city_name | del(.city_name)')
-    fi
+        echo "$response"
+    else
+        # response=$(curl -s https://ipapi.co/json || true)
+        http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://ipapi.co/json)
+        response=$(< /tmp/response_body.txt)
+        rm /tmp/response_body.txt
+        echo "$response"
 
+        if [[ "$http_code" == "429" ]]; then
+            http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/)
+            response=$(< /tmp/response_body.txt)
+            rm /tmp/response_body.txt
+            if echo "$response" | jq '.latitude, .longitude, .city_name, .ip' | grep -q null; then
+                echo -e "Required data is missing\nResponse is ${response}\nExiting" >&2
+                return
+            fi
+            response=$(echo "$response" | jq '. | .city = .city_name | del(.city_name)')
+        fi
+    fi
+  
     if [[ -z "$response" ]] || ! echo "$response" | jq empty; then
         echo "Failed to retrieve data or received invalid JSON. Exiting" >&2
         return
