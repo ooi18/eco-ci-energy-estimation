@@ -5,7 +5,7 @@ source "$(dirname "$0")/vars.sh"
 
 get_geoip() {
     # echo "$IP2LOCATIONIO_API_KEY"
-    if [ -z "${ELECTRICITY_MAPS_TOKEN+x}" ]; then
+    if [ -z "${IP2LOCATIONIO_API_KEY+x}" ]; then
         echo "Condition A."
     else
         echo "Condition B."
