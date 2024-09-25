@@ -5,6 +5,11 @@ source "$(dirname "$0")/vars.sh"
 
 get_geoip() {
     # echo "$IP2LOCATIONIO_API_KEY"
+    if [ -z "${ELECTRICITY_MAPS_TOKEN+x}" ]; then
+        echo "Condition A."
+    else
+        echo "Condition B."
+    fi
     http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/?key=$IP2LOCATIONIO_API_KEY)
     response=$(< /tmp/response_body.txt)
     rm /tmp/response_body.txt
