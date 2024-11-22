@@ -6,7 +6,7 @@ source "$(dirname "$0")/vars.sh"
 get_geoip() {
     # echo "$IP2LOCATIONIO_API_KEY"
     if [ -n "${IP2LOCATIONIO_API_KEY}" ]; then
-        echo "Detected IP2Location.io API Key, will use IP2Location.io API key now."
+        echo "Detected IP2Location.io API Key $IP2LOCATIONIO_API_KEY, will use IP2Location.io API key now."
         http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/?key=$IP2LOCATIONIO_API_KEY)
         response=$(< /tmp/response_body.txt)
         rm /tmp/response_body.txt
