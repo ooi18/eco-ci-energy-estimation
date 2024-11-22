@@ -17,6 +17,7 @@ get_geoip() {
         response=$(echo "$response" | jq '. | .city = .city_name | del(.city_name)')
         echo "$response"
     else
+        echo "Calling ipapi.co API now."
         # response=$(curl -s https://ipapi.co/json || true)
         http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://ipapi.co/json)
         response=$(< /tmp/response_body.txt)
@@ -24,6 +25,7 @@ get_geoip() {
         echo "$response"
 
         if [[ "$http_code" == "429" ]]; then
+            echo "Calling ip2location.io keyless API now."
             http_code=$(curl -s -w "%{http_code}" -o /tmp/response_body.txt https://api.ip2location.io/)
             response=$(< /tmp/response_body.txt)
             rm /tmp/response_body.txt
